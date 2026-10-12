@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" data-ver="23">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Camera Games</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Camera Games">
+<meta name="theme-color" content="#1b1464">
+<link rel="manifest" href="manifest.webmanifest?v=23">
+<link rel="apple-touch-icon" href="icon-180.png?v=23">
+<link rel="icon" href="icon-180.png?v=23">
+<link rel="stylesheet" href="css/style.css?v=23">
+</head>
+<body>
+<canvas id="stage"></canvas>
+<video id="cam" playsinline webkit-playsinline muted autoplay></video>
+
+<!-- In-game HUD -->
+<div id="hud" class="hidden">
+  <button id="backBtn" class="hudbtn" aria-label="Back to menu">⬅ Back</button>
+  <div id="hudLeft" class="pill"></div>
+  <div id="hudScore" class="pill score"><span class="lbl" id="scoreLbl">Score</span> <b id="score">0</b></div>
+  <div id="hudRight" class="pill"></div>
+  <button id="muteBtn" class="hudbtn" aria-label="Sound on/off">🔊</button>
+</div>
+<div id="hint" class="hidden"></div>
+<div id="banner" class="hidden"></div>
+
+<!-- Splash / start -->
+<section id="splash" class="panel">
+  <div class="floaters" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <h1>🎮 Camera Games</h1>
+  <p class="sub">Play with your hands! No controller needed.</p>
+  <button id="startBtn" class="big">▶ Start</button>
+  <p id="startStatus" class="status"></p>
+  <p class="verLabel small"></p>
+  <p class="small">Tap Start, then choose <b>Allow</b> for the camera.<br>Your video stays on your device and is never uploaded.</p>
+</section>
+
+<!-- Error panel -->
+<section id="errorPanel" class="panel hidden">
+  <h2 id="errTitle">Oops!</h2>
+  <p id="errMsg"></p>
+  <div class="row">
+    <button id="retryBtn" class="big alt">🔄 Try again</button>
+    <button id="touchBtn" class="big">👆 Play with touch</button>
+  </div>
+</section>
+
+<!-- Menu -->
+<section id="menu" class="panel hidden">
+  <h2>Pick a game!</h2>
+  <h3 class="cat">🎯 Hand &amp; finger games</h3>
+  <div class="cards" id="g-arcade">
+    <button class="card c-bubble" data-game="bubble"><span class="emo">🫧</span><b>Bubble Pop</b><small>Pop bubbles with your finger. 60 seconds!</small></button>
+    <button class="card c-fruit" data-game="fruit"><span class="emo">🍉</span><b>Fruit Slicer</b><small>Slice the fruit — dodge the bombs!</small></button>
+    <button class="card c-juggle" data-game="juggle"><span class="emo">🤹</span><b>Juggle</b><small>Catch the balls, flick them back up.</small></button>
+    <button class="card c-whack" data-game="whack"><span class="emo">🔨</span><b>Whack-a-Mole</b><small>Swat the moles! Golden = 5. Pick 1 or 2 players.</small></button>
+    <button class="card c-rps" data-game="rps"><span class="emo">✌️</span><b>Rock Paper Scissors</b><small>Beat the computer — best of 5!</small></button>
+    <!--arcade-->
+  </div>
+  <h3 class="cat">🏟️ Sports &amp; ball games (use your hand)</h3>
+  <div class="cards" id="g-sports">
+    <button class="card c-base" data-game="baseball"><span class="emo">⚾</span><b>Baseball</b><small>Swing your hand to hit home runs!</small></button>
+    <button class="card c-tennis" data-game="tennis"><span class="emo">🎾</span><b>Tennis</b><small>Your hand is the racket. Win 3 games!</small></button>
+    <button class="card c-bask" data-game="basketball"><span class="emo">🏀</span><b>Basketball</b><small>Flick your hand up to sink baskets!</small></button>
+    <button class="card c-bowl" data-game="bowling"><span class="emo">🎳</span><b>Bowling</b><small>Swing your arm and roll a strike!</small></button>
+    <button class="card c-golf" data-game="golf"><span class="emo">⛳</span><b>Golf</b><small>Swing like a club, sink it in 3 holes!</small></button>
+    <button class="card c-foot" data-game="football"><span class="emo">🏈</span><b>Football</b><small>Run, pass &amp; kick field goals. Don’t get tackled!</small></button>
+    <button class="card c-pingpong" data-game="pingpong"><span class="emo">🏓</span><b>Ping-Pong</b><small>Your hand is the paddle. First to 11!</small></button>
+    <button class="card c-airhockey" data-game="airhockey"><span class="emo">🏒</span><b>Air Hockey</b><small>Slide the mallet, smack the puck. First to 7!</small></button>
+    <button class="card c-archery" data-game="archery"><span class="emo">🏹</span><b>Archery</b><small>Aim, pull back, release. 10 arrows!</small></button>
+    <button class="card c-volleyball" data-game="volleyball"><span class="emo">🏐</span><b>Volleyball</b><small>Bump, set and spike over the net. First to 11!</small></button>
+    <button class="card c-hockey" data-game="hockey"><span class="emo">🏒</span><b>Hockey Shootout</b><small>Swing like a stick — or be the goalie!</small></button>
+    <!--sports-->
+  </div>
+  <h3 class="cat">🧍 Whole-body games (step back 6–8 ft)</h3>
+  <div class="cards" id="g-body">
+    <button class="card c-jack" data-game="jacks"><span class="emo">🤸</span><b>Jumping Jacks</b><small>60 seconds! The camera counts your jacks.</small></button>
+    <button class="card c-soc" data-game="soccer"><span class="emo">⚽</span><b>Soccer</b><small>Kick goals with your feet — or be the goalie!</small></button>
+    <button class="card c-box" data-game="boxing"><span class="emo">🥊</span><b>Boxing</b><small>Punch, dodge &amp; win 3 rounds!</small></button>
+    <button class="card c-dodge" data-game="dodgeball"><span class="emo">🏐</span><b>Dodgeball</b><small>Dodge, duck, catch &amp; throw back!</small></button>
+    <button class="card c-ski" data-game="ski"><span class="emo">⛷️</span><b>Skiing</b><small>Lean to steer down the slope. Gates & jumps!</small></button>
+    <!--body-->
+  </div>
+  <button id="camCheckBtn" class="link">📷 Camera check &amp; tracking tips</button>
+  <p id="menuNote" class="small"></p>
+  <p class="verLabel small"></p>
+</section>
+
+<!-- Generic game instruction panel (bowling, basketball, boxing, dodgeball, golf) -->
+<section id="infoPanel" class="panel hidden">
+  <h2 id="infoTitle"></h2>
+  <ol id="infoSteps" class="steps"></ol>
+  <p id="infoNote" class="status"></p>
+  <div id="infoModes" class="row hidden"></div>
+  <div class="row"><button id="infoGo" class="big purple">✅ Let’s play!</button></div>
+  <button id="infoBack" class="link">⬅ Back</button>
+</section>
+
+<!-- Juggle mode picker -->
+<section id="modePanel" class="panel hidden">
+  <h2>🤹 Juggle</h2>
+  <div class="row">
+    <button class="big green" data-mode="easy">🌱 Learning mode<small>Slow balls, 5 lives, balls toss themselves after a moment</small></button>
+    <button class="big orange" data-mode="pro">🔥 Juggler mode<small>Flick your hand up to throw within 2 seconds!</small></button>
+    <button class="big purple" data-mode="uni">🛞 Unicycle mode<small>Hardest! Juggle while balancing on one foot</small></button>
+  </div>
+  <button id="modeBack" class="link">⬅ Back</button>
+</section>
+
+<!-- Unicycle instructions -->
+<section id="uniPanel" class="panel hidden">
+  <h2>🛞 Unicycle Juggler</h2>
+  <ol class="steps">
+    <li><span>1</span><div><b>Step back</b> so your <b>whole body</b> is visible, head to toes. Prop the device up so it can see you.</div></li>
+    <li><span>2</span><div><b>Lift one foot</b> off the floor to keep your balance on the unicycle.</div></li>
+    <li><span>3</span><div>Keep juggling! Catch the balls and flick them up. Balanced time makes your score multiplier grow.</div></li>
+    <li><span>4</span><div>Both feet down too long, or swaying too far, and you <b>wobble and fall</b>.</div></li>
+  </ol>
+  <p id="uniNote" class="status"></p>
+  <div class="row">
+    <button id="uniReady" class="big purple">✅ I'm ready!</button>
+  </div>
+  <button id="uniBack" class="link">⬅ Back</button>
+</section>
+
+<!-- Jumping jacks instructions -->
+<section id="jackPanel" class="panel hidden">
+  <h2>🤸 Jumping Jacks</h2>
+  <ol class="steps">
+    <li><span>1</span><div><b>Step back</b> so your <b>whole body</b> is visible, head to toes. Prop the device up so it can see you.</div></li>
+    <li><span>2</span><div>Jump <b>arms up &amp; feet apart</b>, then <b>arms down &amp; feet together</b>. That’s one jack!</div></li>
+    <li><span>3</span><div>Do as many as you can in <b>60 seconds</b>. A 3-2-1 countdown starts when we see you.</div></li>
+  </ol>
+  <p id="jackNote" class="status"></p>
+  <div class="row"><button id="jackReady" class="big purple">✅ I'm ready!</button></div>
+  <button id="jackBack" class="link">⬅ Back</button>
+</section>
+<button id="jackTap" class="hidden">🤸 TAP = 1 jack</button>
+
+<!-- Soccer instructions -->
+<section id="soccerPanel" class="panel hidden">
+  <h2>⚽ Soccer</h2>
+  <ol class="steps">
+    <li><span>1</span><div><b>Put the device on the floor</b>, leaning back against something, with the <b>camera facing up toward you</b>.</div></li>
+    <li><span>2</span><div><b>Stand about 6–8 feet (2 m) back</b> so the camera sees your <b>legs and feet</b>. Your whole body is even better!</div></li>
+    <li><span>3</span><div><b>Kicker:</b> swing a foot <b>fast</b> like you’re kicking the ball. Faster = harder shot. Swing a bit left or right to aim. 5 shots!</div></li>
+    <li><span>4</span><div><b>Goalie:</b> block shots with your <b>hands, feet and body</b>. Lean or lunge to dive!</div></li>
+  </ol>
+  <p id="socNote" class="status"></p>
+  <div class="row"><button id="socKick" class="big purple">⚽ I’m the Kicker</button><button id="socGoalie" class="big alt">🧤 I’m the Goalie</button></div>
+  <button id="socBack" class="link">⬅ Back</button>
+</section>
+<button id="socSwitch" class="hidden">🔄 Switch</button>
+
+<!-- Touch-test controls for balance (touch mode / no body tracking) -->
+<div id="simPanel" class="hidden">
+  <button id="simFoot" class="hudbtn">🦶 Foot up: OFF</button>
+  <label>Sway <input id="simSway" type="range" min="-100" max="100" value="0"></label>
+</div>
+
+<!-- Result -->
+<section id="result" class="panel hidden">
+  <div id="resEmoji" class="resEmoji">🎉</div>
+  <h2 id="resTitle">Great job!</h2>
+  <div id="resScore" class="resScore">0</div>
+  <div id="resStats" class="stats"></div>
+  <div class="row">
+    <button id="againBtn" class="big">🔁 Play again</button>
+    <button id="switchBtn" class="big purple hidden">🔄 Switch</button>
+    <button id="menuBtn" class="big alt">🏠 Menu</button>
+  </div>
+</section>
+
+<div id="debug" class="hidden"></div>
+<script>
+// make sure no old service worker / cache can serve stale files
+if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {});
+if (window.caches) caches.keys().then(ks => ks.forEach(k => caches.delete(k))).catch(() => {});
+</script>
+<script type="module" src="js/app.js?v=23"></script>
+<div id="qBadge" class="hidden"></div>
+</body>
+</html>
